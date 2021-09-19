@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+for f in "$@"; do
+	tbps=0
+    n=0
+	bps="$( metaflac --show-bps "$f" )"
+	
+	while read wb; do
+		tbps=$(( tbps + ( bps - wb ) ))
+		((n++))
+	done < <(flac -ac "$f" 2>/dev/null | fgrep 'wasted_bits' | cut -d '=' -f 3 | cut -f 1)
+	abps=$(( ( ( tbps * 10 / n) + 5 ) / 10 ))
+	printf "%2u/%2u bits\t%s\n" "$abps" "$bps" "$f"
+done
